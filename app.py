@@ -10,15 +10,22 @@ def send_message(chat_id, message_id):
     weather_token = os.environ['WEATHER_TOKEN']
     url = f'https://api.telegram.org/bot{token}/{method}'
     
-    weather = requests.get(f'http://api.weatherstack.com/current?access_key={weather_token}&query=Novosibirsk')
-    dict_weather = json.loads(weather.text)
-    temp, feel_temp = dict_weather['current']['temperature'], dict_weather['current']['feelslike']
-    text = f'Погода в Новосибирске сейчас: {temp}. Ощущается как: {feel_temp}.'
+    try:
+        weather = requests.get(f'http://api.weatherstac.com/current?access_key={weather_token}&query=Novosibirsk', timeout=1)
+        dict_weather = json.loads(weather.text)
+        temp, feel_temp = dict_weather['current']['temperature'], dict_weather['current']['feelslike']
+        text = f'Погода в Новосибирске сейчас: {temp}. Ощущается как: {feel_temp}.'
+    except requests.exceptions.ConnectionError as exc:
+        print(f'Проблема с подключением к сайту. \nЛог ошибки: \n{exc}')
+    except requests.exceptions.Timeout as exc:
+        print(f'Превышено время ожидания запроса. \nЛог ошибки: \n{exc}')
+    except Exception as exc:
+        print(f'Во время запроса на сайт возникла ошибка! \nЛог ошибки: \n{exc}')
     
     data = {'chat_id': chat_id, 'reply_to_message_id': message_id, 'text': text}
     requests.post(url, data=data)
     
-@app.route('/')
+@app.route('/install_webhook')
 def create_webhook():
     token = os.environ['TELEGRAM_TOKEN']
     method = 'setWebhook'
