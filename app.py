@@ -7,9 +7,10 @@ app = Flask(__name__)
 def send_message(chat_id, message_id):
     method = 'sendMessage'
     token = os.environ['TELEGRAM_TOKEN']
+    weather_token = os.environ['WEATHER_TOKEN']
     url = f'https://api.telegram.org/bot{token}/{method}'
     
-    weather = requests.get(f'http://api.weatherstack.com/current?access_key={WEATHER_TOKEN}&query=Novosibirsk')
+    weather = requests.get(f'http://api.weatherstack.com/current?access_key={weather_token}&query=Novosibirsk')
     dict_weather = json.loads(weather.text)
     temp, feel_temp = dict_weather['current']['temperature'], dict_weather['current']['feelslike']
     text = f'Погода в Новосибирске сейчас: {temp}. Ощущается как: {feel_temp}.'
