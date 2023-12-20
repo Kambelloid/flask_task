@@ -1,14 +1,19 @@
 from flask import Flask, request
 import requests
-import os
+import os, json
 
 app = Flask(__name__)
 
-def send_message(chat_id, message_id, text):
+def send_message(chat_id, message_id):
     method = 'sendMessage'
     token = os.environ['TELEGRAM_TOKEN']
-    print(token)
     url = f'https://api.telegram.org/bot{token}/{method}'
+    
+    weather = requests.get(f'http://api.weatherstack.com/current?access_key={WEATHER_TOKEN}&query=Novosibirsk')
+    dict_weather = json.loads(weather.text)
+    temp, feel_temp = dict_weather['current']['temperature'], dict_weather['current']['feelslike']
+    text = f'Погода в Новосибирске сейчас: {temp}. Ощущается как: {feel_temp}.'
+    
     data = {'chat_id': chat_id, 'reply_to_message_id': message_id, 'text': text}
     requests.post(url, data=data)
     
@@ -26,5 +31,5 @@ def receive_update():
         print(request.json)
         chat_id = request.json['message']['chat']['id']
         message_id = request.json['message']['message_id']
-        send_message(chat_id, message_id, 'pong')
+        send_message(chat_id, message_id)
     return {'ok': True}
